@@ -1,0 +1,47 @@
+#!/usr/bin/expect -f
+# hide all terminal output
+log_user 0
+# Set a strict timeout for the login attempt (in seconds)
+set timeout 10
+
+# Grab arguments passed from Bash
+set loginuser [lindex $argv 0]
+set server    [lindex $argv 1]
+set port      [lindex $argv 2]
+set password  [lindex $argv 3]
+
+# Spawn the SSH command with strict settings to avoid interactive prompts
+spawn ssh -F /dev/null -o StrictHostKeyChecking=no -o PreferredAuthentications=password -o PubkeyAuthentication=no -o UserKnownHostsFile=/dev/null -o ConnectTimeout=3 -p $port ${loginuser}@${server}
+
+expect {
+    # Match the password prompt
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    
+    # Match standard "Permission denied" or "Access denied" messages
+    -nocase "permission denied" {
+#        puts "\n\[RESULT\]: Authentication Failed for $server"
+        exit 1
+    }
+        
+    # Match a successful login prompt (adjust regex if your prompt looks different)
+    -re "(#|\\$) " {
+#        puts "\n\[RESULT\]: Authentication Successful for $server"
+        # Safely disconnect
+        send "exit\r"
+        expect eof
+        exit 0
+    }
+    
+    # Handle networking timeouts or connection drops
+    timeout {
+#        puts "\n\[RESULT\]: Connection timed out to $server"
+        exit 2
+    }
+    eof {
+#        puts "\n\[RESULT\]: Connection closed abruptly by $server"
+        exit 3
+    }
+}
