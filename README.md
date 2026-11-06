@@ -3,10 +3,15 @@
 Below is references to this issue and a lot of the remediation steps involve you getting inside vulnerable systems, but you have to know what is actually vulnerable.  Since some of this can be embedded systems, or containers that you did not build, a way to scan for this is needed.
 
 This vulnerability allows a network connection via OpenSSH when certain conditions exist, and without a valid password.  Here is the TL;DR from IONIX.IO
+
 CVE-2026-123158 (CVSS 3.1 8.1, High) is a password authentication bypass in sshd on Linux systems that use musl libc without PAM, most notably Alpine Linux. It is fixed in OpenSSH 10.6p2 (November 5, 2026) and in patched Alpine packages on every supported branch.
+
 Against an account with no password set, any password between 256 and 1024 characters is accepted. Alpine’s default openssh-server package is affected in its default configuration, and public reproduction labs already exist.
+
 Not affected: glibc distributions (Debian, Ubuntu, RHEL and derivatives) and sshd running with PAM enabled.
+
 What to do now: upgrade OpenSSH (on Alpine: apk upgrade -U -a) and restart sshd. If you can’t upgrade yet, set PasswordAuthentication no and restart sshd.
+
 Here is their full post: https://www.ionix.io/blog/sshhole-cve-2026-123158-and-how-ionix-is-helping-you-respond/
 
 A vulnerable instance can be found at: https://github.com/leonjza/sshhole-lab
